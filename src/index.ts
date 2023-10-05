@@ -3,7 +3,7 @@ enum RetryType {
   // duration = 2,
 }
 
-export default class Retryit {
+export default class Retry {
   /**
    *    accept a callback
    *    support interval set
