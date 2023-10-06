@@ -1,6 +1,6 @@
 import Retry from '../index';
 
-describe('Retry Test', () => {
+describe('Retry times Test', () => {
   it('should throw error if did not set func() before start', async () => {
     const retry = new Retry()
       .interval(100)
@@ -168,5 +168,57 @@ describe('Retry Test', () => {
 
     expect(callback).toHaveBeenCalledTimes(2);
     expect(checkPass).toHaveBeenCalledWith(1);
+  });
+});
+
+describe('Retry duration Test', () => {
+  it('should resolve after successful execution', async () => {
+    const successCallback = jest.fn().mockResolvedValue('Success');
+
+    const retry = new Retry()
+      .func(successCallback)
+      .interval(100)
+      .timeout(1000)
+      .retryDuration(3000);
+
+    const result = await retry.start();
+
+    expect(successCallback).toHaveBeenCalledTimes(1);
+    expect(result).toBe('Success');
+  });
+
+  it('should reject after multiple failures execution', async () => {
+    const failCallback = jest.fn()
+      .mockRejectedValue('Failure 1')
+      .mockRejectedValue('Failure 2')
+      .mockRejectedValue('Failure 3');
+
+    const retry = new Retry()
+      .func(failCallback)
+      .interval(200)
+      .timeout(1000)
+      .retryDuration(500);
+
+    const promise = retry.start();
+
+    await expect(promise).rejects.toEqual('Failure 3');
+    expect(failCallback).toHaveBeenCalledTimes(3);
+  });
+
+  it('should resolve after 1 failures and 1 success execution', async () => {
+    const failCallback = jest.fn()
+      .mockRejectedValueOnce('Failure 1')
+      .mockResolvedValueOnce('Success');
+
+    const retry = new Retry()
+      .func(failCallback)
+      .interval(200)
+      .timeout(1000)
+      .retryDuration(500);
+
+    const promise = retry.start();
+
+    await expect(promise).resolves.toEqual('Success');
+    expect(failCallback).toHaveBeenCalledTimes(2);
   });
 });

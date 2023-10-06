@@ -1,17 +1,18 @@
 enum RetryType {
   times = 1,
-  // duration = 2,
+  duration = 2,
 }
 
-export default class Retry {
+export default class RetryFlow {
   /**
-   *    accept a callback
-   *    support interval set
-   *    support timeout set
-   *    support pass result check
-   *    functional invoke
+   *  accept a callback
+   *  support interval set
+   *  support timeout set
+   *  support max try times set
+   *  support max try duration set
+   *  support pass result check
+   *  functional chain invoke
    */
-
   private _callback: Function | null = null;
 
   private _interval: number = 3000;
@@ -20,11 +21,15 @@ export default class Retry {
 
   private _retryTimes: number = 3;
 
+  private _retryDuration: number = 5000;
+
   private _retryType: RetryType = RetryType.times;
 
   private _curRetryTimes: number = 0;
 
   private _checkPassFn: Function | null = null;
+
+  private _durationStartTime: number = 0;
 
   constructor() {
   }
@@ -53,15 +58,19 @@ export default class Retry {
     return this;
   }
 
-  // retryDuration(duration: number) {
-  //   this._retryType = RetryType.duration;
-  //   this._retryTimes = duration;
-  //   return this;
-  // }
+  retryDuration(duration: number) {
+    this._retryType = RetryType.duration;
+    this._retryDuration = duration;
+    return this;
+  }
 
   checkPass(callback: Function) {
     this._checkPassFn = callback;
     return this;
+  }
+
+  async wait(interval: number) {
+    return new Promise(resolve => setTimeout(resolve, interval));
   }
 
   async start() {
@@ -70,13 +79,19 @@ export default class Retry {
     }
 
     return new Promise((resolve, reject) => {
-      if (this._retryType === RetryType.times) {
-        return this.startTimes(resolve, reject);
+      switch (this._retryType) {
+        case RetryType.times:
+          return this._startTimes(resolve, reject);
+        case RetryType.duration:
+          this._durationStartTime = Date.now();
+          return this._startDuration(resolve, reject);
+        default:
+          reject('error retry type');
       }
     });
   }
 
-  async startTimes (resolve: Function, reject: Function) {
+  private async _startTimes (resolve: Function, reject: Function) {
     if (!this._callback) {
       reject('func() should be invoked before start()');
       return;
@@ -89,8 +104,9 @@ export default class Retry {
   
       if (this._increaseTimes()) {
         await this.wait(this._interval);
-        await this.startTimes(resolve, reject);
+        await this._startTimes(resolve, reject);
       } else {
+        this._clearTimes();
         reject(rejectReason ?? `exceed max retry times - ${this._retryTimes}`);
         return;
       }
@@ -98,29 +114,63 @@ export default class Retry {
 
     timeoutTimer = setTimeout(retryOrFailed, this._timeout);
 
+    await this._excuteCb({
+      success: async (res: any) => {
+        timeoutTimer && clearTimeout(timeoutTimer);
+        this._clearTimes();
+        resolve(res);
+      },
+      fail: async (reason: any) => {
+        await retryOrFailed(reason);
+      }
+    });
+  }
+
+  private async _startDuration(resolve: Function, reject: Function) {
+    if (!this._callback) {
+      reject('func() should be invoked before start()');
+      return;
+    }
+
+    const retryOrFailed = async (rejectReason?: string) => {
+      if (this._inDuration()) {
+        await this.wait(this._interval);
+        await this._startDuration(resolve, reject);
+      } else {
+        this._clearDuration();
+        reject(rejectReason ?? `exceed retry durantion ${this._retryDuration}`);
+        return;
+      }
+    };
+
+    await this._excuteCb({
+      success: async (res: any) => {
+        this._clearDuration();
+        resolve(res);
+      },
+      fail: async (reason: any) => {
+        await retryOrFailed(reason);
+      }
+    });
+  }
+
+  private async _excuteCb (opts: { success: Function, fail: Function }) {
+    const { success, fail } = opts;
     let res;
     try {
       res = await this._callback?.();
-
-      clearTimeout(timeoutTimer);
-
       if (this._checkPassFn && !this._checkPassFn(res)) {
-        await retryOrFailed();
+        await fail();
         return;
       }
 
-      this._clear();
-      resolve(res);
+      await success(res);
     } catch (err: any) {
-      await retryOrFailed(err);
+      await fail(err);
     }
   }
 
-  async wait(interval: number) {
-    return new Promise(resolve => setTimeout(resolve, interval));
-  }
-
-  _increaseTimes() {
+  private _increaseTimes() {
     if (this._curRetryTimes >= this._retryTimes) {
       return false;
     }
@@ -130,7 +180,20 @@ export default class Retry {
     return true;
   }
 
-  _clear() {
+  private _inDuration() {
+    const now = Date.now();
+    if (now - this._durationStartTime > this._retryDuration - this._interval) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private _clearTimes() {
     this._curRetryTimes = 0;
+  }
+
+  private _clearDuration() {
+    this._durationStartTime = 0;
   }
 }

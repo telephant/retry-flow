@@ -1,5 +1,5 @@
 {
-  "name": "@telephant/retry",
+  "name": "retry-flow",
   "description": "A functional retry tool for resilient applications",
   "version": "1.0.0",
   "main": "dist/index.js",
@@ -16,6 +16,7 @@
   "keywords": [
     "retry",
     "retryit",
+    "retry flow",
     "try again",
     "timeout",
     "attempt",
