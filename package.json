@@ -52,5 +52,11 @@
       "email" : "telephant11@gmail.com",
       "url" : "https://github.com/telephant/"
     }
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://choosealicense.com/licenses/mit/"
+    }
   ]
 }
