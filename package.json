@@ -1,0 +1,62 @@
+{
+  "name": "retry-flow",
+  "description": "A functional retry tool for resilient applications",
+  "version": "1.0.2",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "rollup --config",
+    "test": "jest",
+    "test:report": "jest --coverage"
+  },
+  "source": "src/index.ts",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "retry",
+    "retryit",
+    "retry flow",
+    "try again",
+    "timeout",
+    "attempt",
+    "functional"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "type": "module",
+  "author": "telephant11",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^10.0.1",
+    "@types/debug": "^4.1.8",
+    "@types/jest": "^29.5.5",
+    "jest": "^29.7.0",
+    "rollup": "^3.6.0",
+    "rollup-plugin-dts": "^6.0.2",
+    "ts-jest": "^29.1.1",
+    "tslib": "^2.4.1",
+    "typescript": "^4.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/telephant/retry.git"
+  },
+  "contributors": [
+    {
+      "name" : "telephant",
+      "email" : "telephant11@gmail.com",
+      "url" : "https://github.com/telephant/"
+    }
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://choosealicense.com/licenses/mit/"
+    }
+  ]
+}
