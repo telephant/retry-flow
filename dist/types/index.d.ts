@@ -16,7 +16,9 @@ declare class RetryFlow {
     private _retryType;
     private _curRetryTimes;
     private _checkPassFn;
+    private _stopWhenFn;
     private _durationStartTime;
+    private _waitTimer;
     constructor();
     func(callback: Function): this;
     interval(ms: number): this;
@@ -24,6 +26,7 @@ declare class RetryFlow {
     retryTimes(times: number): this;
     retryDuration(duration: number): this;
     checkPass(callback: Function): this;
+    stopWhen(callback: Function): this;
     wait(interval: number): Promise<unknown>;
     start(): Promise<unknown>;
     private _startTimes;

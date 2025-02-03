@@ -1,7 +1,7 @@
 {
   "name": "retry-flow",
   "description": "A functional retry tool for resilient applications",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "dist/index.js",
   "scripts": {
     "build": "rollup --config",
@@ -48,9 +48,9 @@
   },
   "contributors": [
     {
-      "name" : "telephant",
-      "email" : "telephant11@gmail.com",
-      "url" : "https://github.com/telephant/"
+      "name": "telephant",
+      "email": "telephant11@gmail.com",
+      "url": "https://github.com/telephant/"
     }
   ],
   "licenses": [
@@ -58,5 +58,8 @@
       "type": "MIT",
       "url": "https://choosealicense.com/licenses/mit/"
     }
-  ]
+  ],
+  "dependencies": {
+    "user": "^0.0.0"
+  }
 }
